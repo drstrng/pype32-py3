@@ -91,8 +91,8 @@ metadata = {
     'scripts'           : scripts,
 
     # Metadata
-    'name'              : 'pype32',
-    'version'           : '0.1-alpha5-py3',
+    'name'              : 'pype32-py3',
+    'version'           : 'v0.1',
     'description'       : 'Yet another Python library to read and write PE/PE+ files.',
     'long_description'  : long_description,
     'url'               : 'https://github.com/drstrng/pype32-py3',
