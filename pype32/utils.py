@@ -44,8 +44,7 @@ __all__ = [
 
 from . import excep
 
-from io import StringIO as cstringio
-from io import StringIO
+from io import BytesIO
 from struct import pack, unpack
 import uuid
 
@@ -75,7 +74,7 @@ def allZero(buffer):
     """
     allZero = True
     for byte in buffer:
-        if byte != "\x00":
+        if byte != 0:
             allZero = False
             break
     return allZero
@@ -93,14 +92,14 @@ class WriteData(object):
         @type signed: bool
         @param signed: (Optional) If set to C{True} the data will be treated as signed. If set to C{False} it will be treated as unsigned.
         """
-        self.data = StringIO(data)
+        self.data = BytesIO(data)
         self.endianness = endianness
         self.signed = signed
     
     def __len__(self):
         return len(self.data.buf[self.data.tell():])
     
-    def __str__(self):
+    def __bytes__(self):
         return self.data.getvalue()
         
     def writeByte(self, byte):
@@ -257,11 +256,11 @@ class ReadData(object):
         @rtype: str
         @return: An ASCII string read form the stream.
         """
-        resultStr = ""
-        while self.data[self.offset] != "\x00":
-            resultStr += self.data[self.offset]
+        items = []
+        while self.data[self.offset] != 0:
+            items.append(self.data[self.offset])
             self.offset += 1
-        return resultStr
+        return bytes(items)
 
     def readAlignedString(self, align = 4):
         """ 
@@ -276,10 +275,10 @@ class ReadData(object):
         s = self.readString()
         r = align - len(s) % align
         while r:
-            s += self.data[self.offset]
+            s += bytes(self.data[self.offset])
             self.offset += 1
             r -= 1
-        return s.rstrip("\x00")
+        return s.rstrip(b"\x00")
         
     def read(self, nroBytes):
         """
