@@ -41,6 +41,9 @@ import os
 import sys
 import glob
 
+if sys.version_info < (3,):
+    sys.exit('Sorry, Python 3 is required.  For python2 version see https://github.com/crackinglandia/pype32')
+
 # Distutils hack: in order to be able to build MSI installers with loose
 # version numbers, we subclass StrictVersion to accept loose version numbers
 # and convert them to the strict format. This works because Distutils will
@@ -89,14 +92,11 @@ metadata = {
 
     # Metadata
     'name'              : 'pype32',
-    'version'           : '0.1-alpha5',
+    'version'           : '0.1-alpha5-py3',
     'description'       : 'Yet another Python library to read and write PE/PE+ files.',
     'long_description'  : long_description,
-    'author'            : 'Nahuel Riva',
-    'author_email'      : 'crackinglandia'+chr(64)+'gmail'+chr(0x2e)+'com',
-    'url'               : 'https://github.com/crackinglandia/pype32', 
+    'url'               : 'https://github.com/drstrng/pype32-py3',
     'keywords'          : ['pecoff', 'x86', 'x64', '.net', 'parser'],
-    'download_url'      : 'https://github.com/crackinglandia/pype32/tarball/v0.1-alpha5',
     }
 
 # Execute the setup script

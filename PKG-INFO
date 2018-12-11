@@ -1,11 +1,8 @@
 Metadata-Version: 1.1
 Name: pype32
-Version: 0.1-alpha5
-Author: Nahuel Riva
-Author-email: crackinglandia at gmail com
-Home-page: https://github.com/crackinglandia/pype32
-Download-url: https://github.com/crackinglandia/pype32/tarball/v0.1-alpha5
-Summary: Yet another Python library to read and write PE/PE+ files.
+Version: 0.1-alpha5-py3
+Home-page: https://github.com/drstrng/pype32-py3
+Summary: Yet another Python library to read and write PE/PE+ files, forked for python3.
 License: BSD 3-Clause
 Description: What is pype32?
         ==================
@@ -15,23 +12,18 @@ Description: What is pype32?
         Where can I find pype32?
         ===========================
         
-        https://github.com/crackinglandia/pype32
+        https://github.com/drstrng/pype32-py3
         
         Project homepage:
         -----------------
         
-        https://github.com/crackinglandia/pype32
-        
-        Download links:
-        ---------------
-        
-        https://github.com/crackinglandia/pype32/releases
+        https://github.com/drstrng/pype32-py3
         
         
         Documentation:
         --------------
         
-        https://github.com/crackinglandia/pype32
+        https://github.com/drstrng/pype32-py3
 Keywords: pecoff,x86,x64,.net,parser
 Platform: Windows, Linux, Mac OSX
 Provides: pype32

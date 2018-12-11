@@ -1,3 +1,8 @@
+What is this repo?
+======
+
+This is a fork of pype32 for python3.  It's not well tested yet, so your comments, PR's etc. are encouraged.
+
 What's pype32? <img src="http://goo.gl/jrf7j8" align="right" height="150" style="max-width: 70px">
 ======
 
