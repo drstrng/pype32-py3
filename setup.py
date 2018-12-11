@@ -96,6 +96,7 @@ metadata = {
     'description'       : 'Yet another Python library to read and write PE/PE+ files.',
     'long_description'  : long_description,
     'url'               : 'https://github.com/drstrng/pype32-py3',
+    'download_url'      : 'https://github.com/drstrng/pype32-py3/archive/v0.1.tar.gz',
     'keywords'          : ['pecoff', 'x86', 'x64', '.net', 'parser'],
     }
 
