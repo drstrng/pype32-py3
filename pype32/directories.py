@@ -34,13 +34,13 @@ PE directory classes.
 
 __revision__ = "$Id$"
            
-import datatypes
-import consts
-import datadirs
-import excep
-import utils
-import baseclasses
-import dotnet
+from . import datatypes
+from . import consts
+from . import datadirs
+from . import excep
+from . import utils
+from . import baseclasses
+from . import dotnet
 
 # typedef struct IMAGE_BOUND_FORWARDER_REF
 # {
@@ -100,8 +100,8 @@ class ImageBoundForwarderRef(list):
         list.__init__(self)
         self.shouldPack = shouldPack
     
-    def __str__(self):
-        return ''.join([str(x) for x in self if x.shouldPack])
+    def __bytes__(self):
+        return b''.join([bytes(x) for x in self if x.shouldPack])
     
     @staticmethod
     def parse(readDataInstance,  numberOfEntries):
@@ -146,8 +146,8 @@ class ImageBoundImportDescriptor(list):
         list.__init__(self)
         self.shouldPack = shouldPack
 
-    def __str__(self):
-        return ''.join([str(x) for x in self if x.shouldPack])
+    def __bytes__(self):
+        return b''.join([bytes(x) for x in self if x.shouldPack])
 
     @staticmethod
     def parse(readDataInstance):
@@ -547,7 +547,7 @@ class ImageBaseRelocationEntry(baseclasses.BaseStructClass):
         reloc = ImageBaseRelocationEntry()
         reloc.virtualAddress.value = readDataInstance.readDword()
         reloc.sizeOfBlock.value = readDataInstance.readDword()
-        toRead = (reloc.sizeOfBlock.value - 8) / len(datatypes.WORD(0))
+        toRead = (reloc.sizeOfBlock.value - 8) // len(datatypes.WORD(0))
         reloc.items = datatypes.Array.parse(readDataInstance,  datatypes.TYPE_WORD,  toRead)
         return reloc
         
@@ -618,8 +618,8 @@ class ImageDebugDirectories(list):
         """
         self.shouldPack = shouldPack
         
-    def __str__(self):
-        return ''.join([str(x) for x in self if self.shouldPack])
+    def __bytes__(self):
+        return ''.join([bytes(x) for x in self if self.shouldPack])
     
     def getType(self):
         """"Returns L{consts.IMAGE_DEBUG_DIRECTORIES}."""
@@ -665,7 +665,7 @@ class ImageImportDescriptorMetaData(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
         
-        self.moduleName = datatypes.String("") #: L{String} moduleName.
+        self.moduleName = datatypes.String(b"") #: L{String} moduleName.
         self.numberOfImports = datatypes.DWORD(0) #: L{DWORD} numberOfImports.
         
         self._attrsList = ["moduleName", "numberOfImports"]
@@ -732,8 +732,8 @@ class ImageImportDescriptor(list):
         """
         self.shouldPack = shouldPack
         
-    def __str__(self):
-        return ''.join([str(x) for x in self if x.shouldPack])
+    def __bytes__(self):
+        return b''.join([bytes(x) for x in self if x.shouldPack])
     
     def getType(self):
         """Returns L{consts.IMAGE_IMPORT_DESCRIPTOR}."""
@@ -782,7 +782,7 @@ class ImportAddressTableEntry(baseclasses.BaseStructClass):
         self.firstThunk = datatypes.DWORD(0) #: L{DWORD} firstThunk.
         self.originalFirstThunk = datatypes.DWORD(0) #: L{DWORD} originalFirstThunk.
         self.hint = datatypes.WORD(0) #: L{WORD} hint.
-        self.name = datatypes.String("") #: L{String} name.
+        self.name = datatypes.String(b"") #: L{String} name.
         
         self._attrsList = ["firstThunk",  "originalFirstThunk",  "hint",  "name"]
         
@@ -804,7 +804,7 @@ class ImportAddressTableEntry64(baseclasses.BaseStructClass):
         self.firstThunk = datatypes.QWORD(0) #: L{QWORD} firstThunk.
         self.originalFirstThunk = datatypes.QWORD(0) #: L{QWORD} originalFirstThunk.
         self.hint = datatypes.WORD(0) #: L{WORD} hint.
-        self.name = datatypes.String("") #: L{String} name.
+        self.name = datatypes.String(b"") #: L{String} name.
         
         self._attrsList = ["firstThunk",  "originalFirstThunk",  "hint",  "name"]
         
@@ -835,7 +835,7 @@ class ExportTableEntry(baseclasses.BaseStructClass):
         self.functionRva = datatypes.DWORD(0) #: L{DWORD} functionRva.
         self.nameOrdinal = datatypes.WORD(0) #: L{WORD} nameOrdinal.
         self.nameRva = datatypes.DWORD(0) #: L{DWORD} nameRva.
-        self.name = datatypes.String("") #: L{String} name.
+        self.name = datatypes.String(b"") #: L{String} name.
         
         self._attrsList = ["ordinal", "functionRva",  "nameOrdinal",  "nameRva",  "name"]
     
@@ -1057,7 +1057,7 @@ class NetMetaDataHeader(baseclasses.BaseStructClass):
         self.minorVersion = datatypes.WORD(0) #: L{WORD} minorVersion.
         self.reserved = datatypes.DWORD(0) #: L{DWORD} reserved.
         self.versionLength = datatypes.DWORD(0) #: L{DWORD} versionLength.
-        self.versionString = datatypes.AlignedString("") #: L{AlignedString} versionString.
+        self.versionString = datatypes.AlignedString(b"") #: L{AlignedString} versionString.
         self.flags = datatypes.WORD(0) #: L{WORD} flags.
         self.numberOfStreams = datatypes.WORD(0) #: L{WORD} numberOfStreams.
         
@@ -1098,7 +1098,7 @@ class NetMetaDataStreamEntry(baseclasses.BaseStructClass):
         self.offset = datatypes.DWORD(0) #: L{DWORD} offset.
         self.size = datatypes.DWORD(0) #: L{DWORD} size.
         # this must be aligned to the next 4-byte boundary
-        self.name = datatypes.AlignedString("") #: L{AlignedString} name.
+        self.name = datatypes.AlignedString(b"") #: L{AlignedString} name.
         # the "info" attribute does not belong to the NETMetaDataStreamEntry struct. It is just a place holder where the
         # data for every entry will be stored.
         self.info = None
@@ -1131,8 +1131,8 @@ class NetMetaDataStreams(dict):
     def __init__(self,  shouldPack = True):
         self.shouldPack = shouldPack
 
-    def __str__(self):
-        return "".join([str(x) for x in self if hasattr(x, "shouldPack") and x.shouldPack])
+    def __bytes__(self):
+        return b"".join([bytes(x) for x in self if hasattr(x, "shouldPack") and x.shouldPack])
 
     def getByNumber(self, number):
         return self.get(name)
@@ -1250,14 +1250,14 @@ class NetMetaDataTables(baseclasses.BaseStructClass):
 
         metadataTableDefinitions = dotnet.MetadataTableDefinitions(dt, netMetaDataStreams)
 
-        for i in xrange(64):
+        for i in range(64):
             dt.tables[i] = { "rows": 0 }
             if dt.netMetaDataTableHeader.maskValid.value >> i & 1:
                 dt.tables[i]["rows"] = readDataInstance.readDword()
             if i in dotnet.MetadataTableNames:
                 dt.tables[dotnet.MetadataTableNames[i]] = dt.tables[i]
 
-        for i in xrange(64):
+        for i in range(64):
             dt.tables[i]["data"] = []
             for j in range(dt.tables[i]["rows"]):
                 row = None
@@ -1265,7 +1265,7 @@ class NetMetaDataTables(baseclasses.BaseStructClass):
                     row = readDataInstance.readFields(metadataTableDefinitions[i])
                 dt.tables[i]["data"].append(row)
 
-        for i in xrange(64):
+        for i in range(64):
             if i in dotnet.MetadataTableNames:
                 dt.tables[dotnet.MetadataTableNames[i]] = dt.tables[i]["data"]
             dt.tables[i] = dt.tables[i]["data"]
@@ -1298,8 +1298,8 @@ class NetResources(baseclasses.BaseStructClass):
 
         self._attrsList = ["signature", "readerCount", "readerTypeLength", "version", "resourceCount", "resourceTypeCount", "resourceTypes", "resourceHashes", "resourceNameOffsets", "dataSectionOffset", "resourceNames", "resourceOffets", "info"]
 
-    def __str__(self):
-        return str(self.info)
+    def __bytes__(self):
+        return bytes(self.info)
 
     def __repr__(self):
         return repr(self.info)
@@ -1333,18 +1333,18 @@ class NetResources(baseclasses.BaseStructClass):
         r.resourceTypeCount = readDataInstance.readDword()
 
         r.resourceTypes = []
-        for i in xrange(r.resourceTypeCount):
+        for i in range(r.resourceTypeCount):
             r.resourceTypes.append(readDataInstance.readDotNetBlob())
 
         # aligned to 8 bytes
         readDataInstance.skipBytes(8 - readDataInstance.tell() & 0x7)
 
         r.resourceHashes = []
-        for i in xrange(r.resourceCount):
+        for i in range(r.resourceCount):
             r.resourceHashes.append(readDataInstance.readDword())
 
         r.resourceNameOffsets = []
-        for i in xrange(r.resourceCount):
+        for i in range(r.resourceCount):
             r.resourceNameOffsets.append(readDataInstance.readDword())
 
         r.dataSectionOffset = readDataInstance.readDword()
@@ -1352,13 +1352,13 @@ class NetResources(baseclasses.BaseStructClass):
         r.resourceNames = []
         r.resourceOffsets = []
         base = readDataInstance.tell()
-        for i in xrange(r.resourceCount):
+        for i in range(r.resourceCount):
             readDataInstance.setOffset(base + r.resourceNameOffsets[i])
             r.resourceNames.append(readDataInstance.readDotNetUnicodeString())
             r.resourceOffsets.append(readDataInstance.readDword())
 
         r.info = {}
-        for i in xrange(r.resourceCount):
+        for i in range(r.resourceCount):
             readDataInstance.setOffset(r.dataSectionOffset + r.resourceOffsets[i])
             r.info[i] = readDataInstance.read(len(readDataInstance))
             r.info[r.resourceNames[i]] = r.info[i]

@@ -30,8 +30,8 @@
 
 import sys
 
-import datatypes
-import caching
+from . import datatypes
+from . import caching
 
 class StringHeapIndex(object):
 
@@ -46,9 +46,8 @@ class StringHeapIndex(object):
         cache = caching.getCache(funcname)
         result = cache.get(offset)
         if result is not None: return result
-
-        for i in self.streams["#Strings"].info:
-            cache.put(*i.iteritems().next())
+        for i in self.streams[b"#Strings"].info:
+            cache.put(*next(iter(i.items())))
 
         return cache.get(offset)
 
@@ -74,8 +73,8 @@ class GuidHeapIndex(object):
         result = cache.get(offset)
         if result is not None: return result
 
-        for i in self.streams["#GUID"].info:
-            cache.put(*i.iteritems().next())
+        for i in self.streams[b"#GUID"].info:
+            cache.put(*next(iter(i.items())))
 
         return cache.get(offset)
 
@@ -101,8 +100,8 @@ class BlobHeapIndex(object):
         result = cache.get(offset)
         if result is not None: return result
 
-        for i in self.streams["#Blob"].info:
-            cache.put(*i.iteritems().next())
+        for i in self.streams[b"#Blob"].info:
+            cache.put(*next(iter(i.items())))
 
         return cache.get(offset)
 

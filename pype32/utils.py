@@ -42,10 +42,10 @@ __all__ = [
            "WriteData", 
            ]
 
-import excep
+from . import excep
 
-from cStringIO import StringIO as cstringio
-from StringIO import StringIO
+from io import StringIO as cstringio
+from io import StringIO
 from struct import pack, unpack
 import uuid
 
@@ -295,7 +295,7 @@ class ReadData(object):
         """
         if nroBytes > self.length - self.offset:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset)
+                print("Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset))
             nroBytes = self.length - self.offset
 
         resultStr = self.data[self.offset:self.offset + nroBytes]
@@ -339,7 +339,7 @@ class ReadData(object):
         """
         if offset > self.length:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset)
+                print("Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset))
             offset = self.length - self.offset
         tmpOff = self.tell()
         self.setOffset(offset)
@@ -362,7 +362,7 @@ class ReadData(object):
         if not isinstance(fields, (list, tuple)): return result
         for field in fields:
             if not isinstance(field, dict): raise Exception("Invalid field definition '{0}'.".format(type(field).__name__))
-            for k, v in field.iteritems():
+            for k, v in field.items():
                 #print type(v).__name__
                 parsed = v.parse(self)
                 result.update({ k: parsed.value })

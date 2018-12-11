@@ -39,9 +39,9 @@ __all__ = [
            "DataDirectory", 
            ]
            
-import consts
-import excep
-import datatypes
+from . import consts
+from . import excep
+from . import datatypes
 
 from struct import pack
 
@@ -66,11 +66,11 @@ class Directory(object):
         self.info = None #: This variable holds the information of the directory.
         self.shouldPack = shouldPack
         
-    def __str__(self):
-        return str(self.rva) + str(self.size)
+    def __bytes__(self):
+        return bytes(self.rva) + bytes(self.size)
 
     def __len__(self):
-        return len(str(self))
+        return len(bytes(self))
 
     def __dir__(self):
         return sorted(self.__dict__.keys())
@@ -111,10 +111,10 @@ class DataDirectory(list):
             dir.name.value = dirs[i]
             self.append(dir)
     
-    def __str__(self):
-        packedRvasAndSizes = ""
+    def __bytes__(self):
+        packedRvasAndSizes = b""
         for directory in self:
-            packedRvasAndSizes += str(directory)
+            packedRvasAndSizes += bytes(directory)
         return packedRvasAndSizes
         
     @staticmethod

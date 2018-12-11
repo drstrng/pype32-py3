@@ -147,12 +147,12 @@ __all__ = [
             "NetMetaDataTables", 
            ]
 
-from datadirs import Directory, DataDirectory
-from datatypes import String, AlignedString, Array, BYTE, WORD, DWORD, QWORD
-from directories import *
-from excep import *
-from utils import ReadData, WriteData
-from pype32 import *
+from .datadirs import Directory, DataDirectory
+from .datatypes import String, AlignedString, Array, BYTE, WORD, DWORD, QWORD
+from .directories import *
+from .excep import *
+from .utils import ReadData, WriteData
+from .pype32 import *
 
 # Library version
 version_number = 0.1

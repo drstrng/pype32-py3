@@ -45,19 +45,19 @@ class BaseStructClass(object):
         self.shouldPack = shouldPack
         self._attrsList = []
 
-    def __str__(self):
-        s = ""
+    def __bytes__(self):
+        s = b""
         for i in self._attrsList:
             attr = getattr(self,  i)
             if hasattr(attr, "shouldPack") and attr.shouldPack:
-                s += str(attr)
+                s += bytes(attr)
         return s
         
     def __len__(self):
-        return len(str(self))
+        return len(bytes(self))
 
     def __dir__(self):
-        return sorted(self._attrsList or self.__dict__.keys())
+        return sorted(self._attrsList or list(self.__dict__.keys()))
 
     def sizeof(self):
         return len(self)
@@ -168,12 +168,12 @@ class DataTypeBaseClass(object):
         if isinstance(other,  self.__class__):
             try:
                 result = self.value + other.value
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         else:
             try:
                 result = self.value + other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
     
@@ -182,12 +182,12 @@ class DataTypeBaseClass(object):
         if isinstance(other,  self.__class__):
             try:
                 result = self.value - other.value
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         else:
             try:
                 result = self.value - other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
     
@@ -198,7 +198,7 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value * other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
         
@@ -206,12 +206,12 @@ class DataTypeBaseClass(object):
         result = None
         if isinstance(other,  self.__class__):
             try:
-                result = self.value / other.value
+                result = self.value // other.value
             except (TypeError, ZeroDivisionError) as e:
                 raise e
         else:
             try:
-                result = self.value / other
+                result = self.value // other
             except (TypeError, ZeroDivisionError) as e:
                 raise e
         return result
@@ -223,7 +223,7 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value ^ other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
         
@@ -234,7 +234,7 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value >> other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
         
@@ -245,7 +245,7 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value << other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
         
@@ -256,7 +256,7 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value & other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result
 
@@ -267,6 +267,6 @@ class DataTypeBaseClass(object):
         else:
             try:
                 result = self.value | other
-            except TypeError, e:
+            except TypeError as e:
                 raise e
         return result

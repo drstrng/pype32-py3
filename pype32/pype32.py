@@ -54,16 +54,17 @@ __all__ = [
            ]
            
 import os
+import codecs
 import hashlib
 import binascii
 
-import datadirs
-import datatypes
-import consts
-import excep
-import utils
-import directories
-import baseclasses
+from . import datadirs
+from . import datatypes
+from . import consts
+from . import excep
+from . import utils
+from . import directories
+from . import baseclasses
 
 from struct import pack, unpack
 
@@ -98,8 +99,8 @@ class PE(object):
         self.ntHeaders = NtHeaders() #: L{NtHeaders} ntHeaders.
         self.sectionHeaders = SectionHeaders() #: L{SectionHeaders} sectionHeaders.
         self.sections = Sections(self.sectionHeaders) #: L{Sections} sections.
-        self.overlay = ""
-        self.signature = ""
+        self.overlay = b""
+        self.signature = b""
 
         self._data = data
         self._pathToFile = pathToFile
@@ -143,7 +144,7 @@ class PE(object):
         """
         rd.setOffset(0)
         sign = rd.read(2)
-        if sign == "MZ":
+        if sign == b"MZ":
             return True
         return False
         
@@ -160,7 +161,7 @@ class PE(object):
         rd.setOffset(0)
         e_lfanew_offset = unpack("<L",  rd.readAt(0x3c, 4))[0]
         sign = rd.readAt(e_lfanew_offset, 2)
-        if sign == "PE":
+        if sign == b"PE":
             return True
         return False
         
@@ -181,7 +182,7 @@ class PE(object):
             raise excep.PEException("Invalid PE signature. Found %d instead of %d." % (self.ntHeaders.optionaHeader.signature.value, consts.PE_SIGNATURE))
             
         if self.ntHeaders.optionalHeader.numberOfRvaAndSizes.value > 0x10:
-            print excep.PEWarning("Suspicious value for NumberOfRvaAndSizes: %d." % self.ntHeaders.optionaHeader.numberOfRvaAndSizes.value)
+            print(excep.PEWarning("Suspicious value for NumberOfRvaAndSizes: %d." % self.ntHeaders.optionaHeader.numberOfRvaAndSizes.value))
             
     def readFile(self, pathToFile):
         """
@@ -207,7 +208,7 @@ class PE(object):
 
         @raise IOError: If the file could not be opened for write operations.
         """
-        file_data = str(self)
+        file_data = bytes(self)
         if filename:
             try:
                 self.__write(filename, file_data)
@@ -231,15 +232,15 @@ class PE(object):
         fd.close()
                         
     def __len__(self):
-        return len(str(self))
+        return len(bytes(self))
         
-    def __str__(self):
+    def __bytes__(self):
         if self._data is None and self._pathToFile is None:
-            padding = "\x00" * (self.sectionHeaders[0].pointerToRawData.value - self._getPaddingToSectionOffset())
+            padding = b"\x00" * (self.sectionHeaders[0].pointerToRawData.value - self._getPaddingToSectionOffset())
         else:
             padding = self._getPaddingDataToSectionOffset()
         
-        pe = str(self.dosHeader) + str(self.dosStub) + str(self.ntHeaders) + str(self.sectionHeaders) + str(padding) + str(self.sections) + str(self.overlay)
+        pe = bytes(self.dosHeader) + bytes(self.dosStub) + bytes(self.ntHeaders) + bytes(self.sectionHeaders) + bytes(padding) + bytes(self.sections) + bytes(self.overlay)
         #if not self._fastLoad:
             #pe = self._updateDirectoriesData(pe)
         return pe
@@ -258,12 +259,12 @@ class PE(object):
         wr = utils.WriteData(data)
         
         for dir in dataDirs:
-            dataToWrite = str(dir.info)
+            dataToWrite = bytes(dir.info)
             if len(dataToWrite) != dir.size.value and self._verbose:
-                print excep.DataLengthException("Warning: current size of %s directory does not match with dataToWrite length %d." % (dir.size.value, len(dataToWrite)))
+                print(excep.DataLengthException("Warning: current size of %s directory does not match with dataToWrite length %d." % (dir.size.value, len(dataToWrite))))
             wr.setOffset(self.getOffsetFromRva(dir.rva.value))
             wr.write(dataToWrite)
-        return str(wr)
+        return bytes(wr)
         
     def _getPaddingDataToSectionOffset(self):
         """
@@ -291,7 +292,7 @@ class PE(object):
         
         @raise InstanceErrorException: If the C{readDataInstance} or the C{dataDirectoryInstance} were not specified.
         """
-        signature = ""
+        signature = b""
 
         if readDataInstance is not None and dataDirectoryInstance is not None:        
             securityDirectory = dataDirectoryInstance[consts.SECURITY_DIRECTORY]
@@ -327,7 +328,7 @@ class PE(object):
                 readDataInstance.setOffset(offset)
             except excep.WrongOffsetValueException:
                 if self._verbose:
-                    print "It seems that the file has no overlay data."
+                    print("It seems that the file has no overlay data.")
         else:
             raise excep.InstanceErrorException("ReadData instance or SectionHeaders instance not specified.")
             
@@ -426,7 +427,7 @@ class PE(object):
             fa = self.ntHeaders.optionalHeader.fileAlignment.value
             prd = self.sectionHeaders[i].pointerToRawData.value
             srd = self.sectionHeaders[i].sizeOfRawData.value
-            if len(str(self)) - self._adjustFileAlignment(prd,  fa) < srd:
+            if len(bytes(self)) - self._adjustFileAlignment(prd,  fa) < srd:
                 size = self.sectionHeaders[i].misc.value
             else:
                 size = max(srd,  self.sectionHeaders[i].misc.value)
@@ -444,7 +445,7 @@ class PE(object):
         @rtype: str
         @return: A defaul DOS stub.
         """
-        return "0E1FBA0E00B409CD21B8014CCD21546869732070726F6772616D2063616E6E6F742062652072756E20696E20444F53206D6F64652E0D0D0A240000000000000037E338C97382569A7382569A7382569A6DD0D29A6982569A6DD0C39A6382569A6DD0D59A3A82569A54442D9A7482569A7382579A2582569A6DD0DC9A7282569A6DD0C29A7282569A6DD0C79A7282569A526963687382569A000000000000000000000000000000000000000000000000".decode("hex")
+        return codecs.decode(b"0E1FBA0E00B409CD21B8014CCD21546869732070726F6772616D2063616E6E6F742062652072756E20696E20444F53206D6F64652E0D0D0A240000000000000037E338C97382569A7382569A7382569A6DD0D29A6982569A6DD0C39A6382569A6DD0D59A3A82569A54442D9A7482569A7382579A2582569A6DD0DC9A7282569A6DD0C29A7282569A6DD0C79A7282569A526963687382569A000000000000000000000000000000000000000000000000", "hex")
 
     def _getPaddingToSectionOffset(self):
         """
@@ -453,7 +454,7 @@ class PE(object):
         @rtype: int
         @return: The offset where the end of the last section header resides in the PE file.
         """
-        return len(str(self.dosHeader) + str(self.dosStub) + str(self.ntHeaders) + str(self.sectionHeaders))
+        return len(bytes(self.dosHeader) + bytes(self.dosStub) + bytes(self.ntHeaders) + bytes(self.sectionHeaders))
 
     def fullLoad(self):
         """Parse all the directories in the PE file."""
@@ -508,7 +509,7 @@ class PE(object):
         fa = self.ntHeaders.optionalHeader.fileAlignment.value
         sa = self.ntHeaders.optionalHeader.sectionAlignment.value
 
-        padding = "\xcc" * (fa - len(data))
+        padding = b"\xcc" * (fa - len(data))
         sh = SectionHeader()
         
         if len(self.sectionHeaders):
@@ -565,12 +566,12 @@ class PE(object):
                     raise IndexError("list index out of range.")
                     
                 if vz < rz:
-                    print "WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz)
+                    print("WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz))
                     
                 if len(data) % fa == 0:
                     self.sections[-1] += data
                 else:
-                    self.sections[-1] += data + "\xcc" * (fa - len(data) % fa)
+                    self.sections[-1] += data + b"\xcc" * (fa - len(data) % fa)
                 
             else:
                 # if it is not the last section ...
@@ -587,7 +588,7 @@ class PE(object):
                     if len(data) % fa == 0:
                         self.sections[counter] += data
                     else:
-                        self.sections[counter] += data + "\xcc" * (fa - len(data) % fa)
+                        self.sections[counter] += data + b"\xcc" * (fa - len(data) % fa)
                          
                     counter += 1
                     
@@ -605,7 +606,7 @@ class PE(object):
                         rz = self.sectionHeaders[counter].pointerToRawData.value
                         
                         if vz < rz:
-                            print "WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz)
+                            print("WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz))
                             
                         counter += 1
                     
@@ -639,13 +640,13 @@ class PE(object):
         """
         if fileAlignment > consts.DEFAULT_FILE_ALIGNMENT:
             if not utils.powerOfTwo(fileAlignment):
-                print "Warning: FileAlignment is greater than DEFAULT_FILE_ALIGNMENT (0x200) and is not power of two."
+                print("Warning: FileAlignment is greater than DEFAULT_FILE_ALIGNMENT (0x200) and is not power of two.")
         
         if fileAlignment < consts.DEFAULT_FILE_ALIGNMENT:
             return value
             
         if fileAlignment and value % fileAlignment:
-            return ((value / fileAlignment) + 1) * fileAlignment
+            return ((value // fileAlignment) + 1) * fileAlignment
             
         return value
         
@@ -667,13 +668,13 @@ class PE(object):
         """
         if fileAlignment < consts.DEFAULT_FILE_ALIGNMENT:
             if fileAligment != sectionAlignment:
-                print "FileAlignment does not match SectionAlignment."
+                print("FileAlignment does not match SectionAlignment.")
         
         if sectionAlignment < consts.DEFAULT_PAGE_SIZE:
             sectionAlignment = fileAlignment
             
         if sectionAlignment and value % sectionAlignment:
-            return sectionAlignment * ((value / sectionAlignment) + 1)
+            return sectionAlignment * ((value // sectionAlignment) + 1)
         return value
     
     def getDwordAtRva(self, rva):
@@ -776,7 +777,7 @@ class PE(object):
         @rtype: str
         @return: The data obtained at the given offset.
         """
-        data = str(self)
+        data = bytes(self)
         return data[offset:offset+size]
     
     def readStringAtRva(self, rva):
@@ -790,8 +791,8 @@ class PE(object):
         @return: A new L{String} object from the given RVA.
         """
         d = self.getDataAtRva(rva,  1)
-        resultStr = datatypes.String("")
-        while d != "\x00":
+        resultStr = datatypes.String(b"")
+        while d != b"\x00":
             resultStr.value += d
             rva += 1
             d = self.getDataAtRva(rva, 1)
@@ -953,7 +954,7 @@ class PE(object):
                 try:
                     dataDirectoryInstance[directory[0]].info = directory[1](dir.rva.value, dir.size.value, magic)
                 except Exception as e:
-                    print excep.PEWarning("Error parsing PE directory: %s." % directory[1].__name__.replace("_parse", ""))
+                    print(excep.PEWarning("Error parsing PE directory: %s." % directory[1].__name__.replace("_parse", "")))
 
     def _parseResourceDirectory(self, rva, size, magic = consts.PE32):
         """
@@ -1158,11 +1159,11 @@ class PE(object):
         addressOfFunctions = iet.addressOfFunctions.value
         
         # populate the auxFunctionRvaArray
-        for i in xrange(iet.numberOfFunctions.value):
+        for i in range(iet.numberOfFunctions.value):
             auxFunctionRvaArray.append(self.getDwordAtRva(addressOfFunctions).value)
             addressOfFunctions += datatypes.DWORD().sizeof()
             
-        for i in xrange(numberOfNames):
+        for i in range(numberOfNames):
             
             nameRva = self.getDwordAtRva(addressOfNames).value
             nameOrdinal = self.getWordAtRva(addressOfNameOrdinals).value
@@ -1187,7 +1188,7 @@ class PE(object):
         #print "export table length: %d" % len(iet.exportTable)
         
         #print "auxFunctionRvaArray: %r" % auxFunctionRvaArray
-        for i in xrange(iet.numberOfFunctions.value):
+        for i in range(iet.numberOfFunctions.value):
             #print "auxFunctionRvaArray[%d]: %x" % (i,  auxFunctionRvaArray[i])
             if auxFunctionRvaArray[i] != iet.exportTable[i].functionRva.value:
                 entry = directories.ExportTableEntry()
@@ -1219,7 +1220,7 @@ class PE(object):
         @return: A new L{ImageDebugDirectory} object.
         """        
         debugDirData = self.getDataAtRva(rva, size)
-        numberOfEntries = size / consts.SIZEOF_IMAGE_DEBUG_ENTRY32
+        numberOfEntries = size // consts.SIZEOF_IMAGE_DEBUG_ENTRY32
         rd = utils.ReadData(debugDirData)
         return directories.ImageDebugDirectories.parse(rd,  numberOfEntries)
         
@@ -1241,12 +1242,12 @@ class PE(object):
         
         @raise InvalidParameterException: If wrong magic was specified.
         """
-        #print "RVA: %x - Size: %x" % (rva, size)        
+        #print "RVA: %x - Size: %x" % (rva, size))
         importsDirData = self.getDataAtRva(rva,  size)
         #print "Length importsDirData: %d" % len(importsDirData)
-        numberOfEntries = size / consts.SIZEOF_IMAGE_IMPORT_ENTRY32
+        numberOfEntries = size // consts.SIZEOF_IMAGE_IMPORT_ENTRY32
         rd = utils.ReadData(importsDirData)
-        
+
         # In .NET binaries, the size of the data directory corresponding to the import table
         # is greater than the number of bytes in the file. Thats why we check for the last group of 5 null bytes
         # that indicates the end of the IMAGE_IMPORT_DESCRIPTOR array.
@@ -1259,7 +1260,7 @@ class PE(object):
                 count += 1
             except excep.DataLengthException:
                 if self._verbose:
-                    print "[!] Warning: DataLengthException detected!."
+                    print("[!] Warning: DataLengthException detected!.")
                 
         if numberOfEntries - 1 > count:
             numberOfEntries = count + 1
@@ -1409,21 +1410,21 @@ class PE(object):
             rd.setOffset(stream.offset.value)
             rd2 = utils.ReadData(rd.read(stream.size.value))
             stream.info = []
-            if name == "#~" or i == 0:
+            if name == b"#~" or i == 0:
                 stream.info = rd2
-            elif name == "#Strings" or i == 1:
+            elif name == b"#Strings" or i == 1:
                 while len(rd2) > 0:
                     offset = rd2.tell()
                     stream.info.append({ offset: rd2.readDotNetString() })
-            elif name == "#US" or i == 2:
+            elif name == b"#US" or i == 2:
                 while len(rd2) > 0:
                     offset = rd2.tell()
                     stream.info.append({ offset: rd2.readDotNetUnicodeString() })
-            elif name == "#GUID" or i == 3:
+            elif name == b"#GUID" or i == 3:
                 while len(rd2) > 0:
                     offset = rd2.tell()
                     stream.info.append({ offset: rd2.readDotNetGuid() })
-            elif name == "#Blob" or i == 4:
+            elif name == b"#Blob" or i == 4:
                 while len(rd2) > 0:
                     offset = rd2.tell()
                     stream.info.append({ offset: rd2.readDotNetBlob() })
@@ -1431,7 +1432,7 @@ class PE(object):
         for i in range(numberOfStreams):
             stream = netDirectoryClass.netMetaDataStreams[i]
             name = stream.name.value
-            if name == "#~" or i == 0:
+            if name == b"#~" or i == 0:
                 stream.info = directories.NetMetaDataTables.parse(stream.info, netDirectoryClass.netMetaDataStreams)
 
         # parse .NET resources
@@ -1449,7 +1450,7 @@ class PE(object):
             rd.setOffset(offset)
             size = rd.readDword()
             data = rd.read(size)
-            if data[:4] == "\xce\xca\xef\xbe":
+            if data[:4] == b"\xce\xca\xef\xbe":
                 data = directories.NetResources.parse(utils.ReadData(data))
             resources.append({ "name": i["name"], "offset": offset + 4, "size": size, "data": data })
 
@@ -1464,7 +1465,7 @@ class PE(object):
         @rtype: str
         @return: The MD5 hash from the L{PE} instance.
         """
-        return hashlib.md5(str(self)).hexdigest()
+        return hashlib.md5(bytes(self)).hexdigest()
 
     def getSha1(self):
         """
@@ -1473,7 +1474,7 @@ class PE(object):
         @rtype: str
         @return: The SHA1 hash from the L{PE} instance.
         """
-        return hashlib.sha1(str(self)).hexdigest()
+        return hashlib.sha1(bytes(self)).hexdigest()
 
     def getSha256(self):
         """
@@ -1482,7 +1483,7 @@ class PE(object):
         @rtype: str
         @return: The SHA256 hash from the L{PE} instance.
         """
-        return hashlib.sha256(str(self)).hexdigest()
+        return hashlib.sha256(bytes(self)).hexdigest()
 
     def getSha512(self):
         """
@@ -1491,7 +1492,7 @@ class PE(object):
         @rtype: str
         @return: The SHA512 hash from the L{PE} instance.
         """
-        return hashlib.sha512(str(self)).hexdigest()
+        return hashlib.sha512(bytes(self)).hexdigest()
 
     def getCRC32(self):
         """
@@ -1500,7 +1501,7 @@ class PE(object):
         @rtype: int
         @return: The CRD32 checksum from the L{PE} instance.
         """
-        return binascii.crc32(str(self)) & 0xffffffff
+        return binascii.crc32(bytes(self)) & 0xffffffff
 
     def hasImportedFunction(self, funcName):
         retval = False
@@ -1513,9 +1514,9 @@ class PE(object):
                             retval = True
                             break
             else:
-                print "WARNING: IMPORT_DIRECTORY not found on PE!"
+                print("WARNING: IMPORT_DIRECTORY not found on PE!")
         else:
-            print "WARNING: fastLoad parameter was used to load the PE. Data directories are not parsed when using this options. Please, use fastLoad = False."
+            print("WARNING: fastLoad parameter was used to load the PE. Data directories are not parsed when using this options. Please, use fastLoad = False.")
         return retval
 
     def getNetMetadataToken(self, token):
@@ -1675,8 +1676,8 @@ class NtHeaders(baseclasses.BaseStructClass):
         self.fileHeader = FileHeader() #: L{FileHeader} fileHeader.
         self.optionalHeader = OptionalHeader() #: L{OptionalHeader} optionalHeader.
         
-    def __str__(self):
-        return str(self.signature) + str(self.fileHeader) + str(self.optionalHeader)
+    def __bytes__(self):
+        return bytes(self.signature) + bytes(self.fileHeader) + bytes(self.optionalHeader)
 
     @staticmethod
     def parse(readDataInstance):
@@ -1785,7 +1786,7 @@ class OptionalHeader(baseclasses.BaseStructClass):
         self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE) #: L{WORD} dllCharacteristics.
         self.sizeOfStackReserve = datatypes.DWORD(0x00100000) #: L{DWORD} sizeOfStackReserve.
         self.sizeOfStackCommit = datatypes.DWORD(0x00004000) #: L{DWORD} sizeOfStackCommit.
-        self.sizeOfHeapReserve = datatypes.DWORD(00100000) #: L{DWORD} sizeOfHeapReserve.
+        self.sizeOfHeapReserve = datatypes.DWORD(0o0100000) #: L{DWORD} sizeOfHeapReserve.
         self.sizeOfHeapCommit = datatypes.DWORD(0x1000) #: L{DWORD} sizeOfHeapCommit.
         self.loaderFlags = datatypes.DWORD(0) #: L{DWORD} loaderFlags.
         self.numberOfRvaAndSizes = datatypes.DWORD(0x10) #: L{DWORD} numberOfRvaAndSizes.
@@ -1921,7 +1922,7 @@ class OptionalHeader64(baseclasses.BaseStructClass):
         self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE) #: L{WORD} dllCharacteristics.
         self.sizeOfStackReserve = datatypes.QWORD(0x00100000) #: L{QWORD} sizeOfStackReserve.
         self.sizeOfStackCommit = datatypes.QWORD(0x00004000) #: L{QWORD} sizeOfStackCommit.
-        self.sizeOfHeapReserve = datatypes.QWORD(00100000) #: L{QWORD} sizeOfHeapReserve.
+        self.sizeOfHeapReserve = datatypes.QWORD(0o0100000) #: L{QWORD} sizeOfHeapReserve.
         self.sizeOfHeapCommit = datatypes.QWORD(0x1000) #: L{QWORD} sizeOfHeapCommit.
         self.loaderFlags = datatypes.DWORD(0) #: L{DWORD}  loaderFlags.
         self.numberOfRvaAndSizes = datatypes.DWORD(0x10) #: L{DWORD} numberOfRvaAndSizes.
@@ -1999,7 +2000,7 @@ class SectionHeader(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self,  shouldPack)
         
-        self.name = datatypes.String('.travest') #: L{String} name.
+        self.name = datatypes.String(b'.travest') #: L{String} name.
         self.misc = datatypes.DWORD(0x1000) #: L{DWORD} misc. 
         self.virtualAddress = datatypes.DWORD(0x1000) #: L{DWORD} virtualAddress.
         self.sizeOfRawData = datatypes.DWORD(0x200) #: L{DWORD} sizeOfRawData.
@@ -2062,8 +2063,8 @@ class SectionHeaders(list):
                 sh = SectionHeader()
                 self.append(sh)
                 
-    def __str__(self):
-        return "".join([str(x) for x in self if x.shouldPack])
+    def __bytes__(self):
+        return b"".join([bytes(x) for x in self if x.shouldPack])
         
     @staticmethod
     def parse(readDataInstance,  numberOfSectionHeaders):
@@ -2109,10 +2110,10 @@ class Sections(list):
         
         if sectionHeadersInstance:
             for sh in sectionHeadersInstance:
-                self.append("\xcc" * sh.sizeOfRawData.value)
+                self.append(b"\xcc" * sh.sizeOfRawData.value)
                 
-    def __str__(self):          
-        return "".join([str(data) for data in self])
+    def __bytes__(self):          
+        return b"".join([bytes(data) for data in self])
         
     @staticmethod
     def parse(readDataInstance,  sectionHeadersInstance):
@@ -2133,16 +2134,16 @@ class Sections(list):
         for sectionHdr in sectionHeadersInstance:
             
             if sectionHdr.sizeOfRawData.value > len(readDataInstance.data):
-                print "Warning: SizeOfRawData is larger than file."
+                print("Warning: SizeOfRawData is larger than file.")
             
             if sectionHdr.pointerToRawData.value > len(readDataInstance.data):
-                print "Warning: PointerToRawData points beyond the end of the file."
+                print("Warning: PointerToRawData points beyond the end of the file.")
             
             if sectionHdr.misc.value > 0x10000000:
-                print "Warning: VirtualSize is extremely large > 256MiB."
+                print("Warning: VirtualSize is extremely large > 256MiB.")
             
             if sectionHdr.virtualAddress.value > 0x10000000:
-                print "Warning: VirtualAddress is beyond 0x10000000"
+                print("Warning: VirtualAddress is beyond 0x10000000")
             
             # skip sections with pointerToRawData == 0. According to PECOFF, it contains uninitialized data
             if sectionHdr.pointerToRawData.value:
