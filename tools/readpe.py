@@ -44,55 +44,55 @@ def showDosHeaderData(peInstance):
     """ Prints IMAGE_DOS_HEADER fields. """
     
     dosFields = peInstance.dosHeader.getFields()
-    print "[+] IMAGE_DOS_HEADER values:\n"
+    print("[+] IMAGE_DOS_HEADER values:\n")
     for field in dosFields:
         if isinstance(dosFields[field],  datatypes.Array):
-            print "--> %s - Array of length %d" % (field,  len(dosFields[field]))
+            print("--> %s - Array of length %d" % (field,  len(dosFields[field])))
             counter = 0
             for element in dosFields[field]:
-                print "[%d] 0x%08x" % (counter,  element.value)
+                print("[%d] 0x%08x" % (counter,  element.value))
                 counter += 1
         else:
-            print "--> %s = 0x%08x" % (field,  dosFields[field].value)
+            print("--> %s = 0x%08x" % (field,  dosFields[field].value))
 
 def showNtHeadersData(peInstance):
     """ Prints IMAGE_NT_HEADERS signature. """
     
-    print "[+] IMAGE_NT_HEADERS signature:\n"
-    print "--> NT_HEADERS signature: 0x%08x" % peInstance.ntHeaders.signature.value
+    print("[+] IMAGE_NT_HEADERS signature:\n")
+    print("--> NT_HEADERS signature: 0x%08x" % peInstance.ntHeaders.signature.value)
     
 def showFileHeaderData(peInstance):
     """ Prints IMAGE_FILE_HEADER fields. """
     
     fileHeaderFields = peInstance.ntHeaders.fileHeader.getFields()    
-    print "[+] IMAGE_FILE_HEADER values:\n"
+    print("[+] IMAGE_FILE_HEADER values:\n")
     for field in fileHeaderFields:
-        print "--> %s = 0x%08x" % (field,  fileHeaderFields[field].value)
+        print("--> %s = 0x%08x" % (field,  fileHeaderFields[field].value))
 
 def showOptionalHeaderData(peInstance):
     """ Prints IMAGE_OPTIONAL_HEADER fields. """
     
-    print "[+] IMAGE_OPTIONAL_HEADER:\n"
+    print("[+] IMAGE_OPTIONAL_HEADER:\n")
     ohFields = peInstance.ntHeaders.optionalHeader.getFields()
     for field in ohFields:
         if not isinstance(ohFields[field],  datadirs.DataDirectory):
-            print "--> %s = 0x%08x" % (field,  ohFields[field].value)
+            print("--> %s = 0x%08x" % (field,  ohFields[field].value))
 
 def showDataDirectoriesData(peInstance):
     """ Prints the DATA_DIRECTORY fields. """
     
-    print "[+] Data directories:\n"
+    print("[+] Data directories:\n")
     dirs = peInstance.ntHeaders.optionalHeader.dataDirectory
     counter = 1
     for dir in dirs:
-        print "[%d] --> Name: %s -- RVA: 0x%08x -- SIZE: 0x%08x" % (counter,  dir.name.value,  dir.rva.value,  dir.size.value)
+        print("[%d] --> Name: %s -- RVA: 0x%08x -- SIZE: 0x%08x" % (counter,  dir.name.value,  dir.rva.value,  dir.size.value))
         counter += 1
 
 def showSectionsHeaders(peInstance):
     """ Prints IMAGE_SECTION_HEADER for every section present in the file. """
     
-    print "[+] Sections information:\n"
-    print "--> NumberOfSections: %d\n" % peInstance.ntHeaders.fileHeader.numberOfSections.value
+    print("[+] Sections information:\n")
+    print("--> NumberOfSections: %d\n" % peInstance.ntHeaders.fileHeader.numberOfSections.value)
     for section in peInstance.sectionHeaders:
         fields = section.getFields()
         for field in fields:
@@ -100,8 +100,8 @@ def showSectionsHeaders(peInstance):
                 fmt = "%s = %s"
             else:
                 fmt = "%s = 0x%08x"
-            print fmt % (field,  fields[field].value)
-        print "\n"
+            print(fmt % (field,  fields[field].value))
+        print("\n")
 
 def showImports(peInstance):
     """ Shows imports information. """
@@ -110,18 +110,18 @@ def showImports(peInstance):
     if iidEntries:
         for iidEntry in iidEntries:
             fields = iidEntry.getFields()
-            print "module: %s" % iidEntry.metaData.moduleName.value
+            print("module: %s" % iidEntry.metaData.moduleName.value)
             for field in fields:
-                print "%s -> %x" % (field,  fields[field].value)
+                print("%s -> %x" % (field,  fields[field].value))
             
             for iatEntry in iidEntry.iat:
                 fields = iatEntry.getFields()
                 for field in fields:
-                    print "%s - %r" % (field,  fields[field].value)
+                    print("%s - %r" % (field,  fields[field].value))
                     
-            print "\n"
+            print("\n")
     else:
-        print "The file does not have imported functions."
+        print("The file does not have imported functions.")
 
 def showExports(peInstance):
     """ Show exports information """
@@ -130,14 +130,14 @@ def showExports(peInstance):
         exp_fields = exports.getFields()
 
         for field in exp_fields:
-            print "%s -> %x" % (field,  exp_fields[field].value)
+            print("%s -> %x" % (field,  exp_fields[field].value))
         
         for entry in exports.exportTable:
             entry_fields = entry.getFields()
             for field in entry_fields:
-                print "%s -> %r" % (field,  entry_fields[field].value)    
+                print("%s -> %r" % (field,  entry_fields[field].value))    
     else:
-        print "The file does not have exported functions."
+        print("The file does not have exported functions.")
 
 def prepareOptions(parser):
     HeadersGroup = OptionGroup(parser,  "Options for PE Headers")
@@ -185,24 +185,24 @@ def main():
 
     if options.show_headers:
         showDosHeaderData(pe)
-        print "\n"
+        print("\n")
         showNtHeadersData(pe)
-        print "\n"
+        print("\n")
         showFileHeaderData(pe)
-        print "\n"
+        print("\n")
         showOptionalHeaderData(pe)
-        print "\n"
+        print("\n")
     elif options.show_directories:
         showDataDirectoriesData(pe)
     elif options.show_section_headers:
         showSectionsHeaders(pe)
     elif options.show_signature:
         if len(pe.signature):
-            print "--> Digital signature detected. Length: %x" % len(pe.signature)
-            print "--> Signature (first 0x10 bytes): %r" % pe.signature[:0x10]
+            print("--> Digital signature detected. Length: %x" % len(pe.signature))
+            print("--> Signature (first 0x10 bytes): %r" % pe.signature[:0x10])
     elif options.show_overlay:
         if len(pe.overlay):
-            print "--> Overlay detected. Length: %x" % len(pe.overlay)
+            print("--> Overlay detected. Length: %x" % len(pe.overlay))
     elif options.show_imports:
         showImports(pe)
     elif options.show_exports:
@@ -215,11 +215,11 @@ def main():
             try:
                 index = int(options.multi[0])
             except ValueError:
-                raise "First parameter must be an integer!."
+                raise Exception("First parameter must be an integer!.")
             
             pe.extendSection(options.multi[0],  options.multi[1])
         else:
-            print "PE has no section to extend!."
+            print("PE has no section to extend!.")
     else:
         parser.print_help()
         
