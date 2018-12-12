@@ -4,12 +4,20 @@ What is this repo?
 This is a fork of pype32 for python3.  WARNING It's not well tested yet.
 Your comments and PRs are encouraged.
 
+Installation (python3)
+======
+
+Using **pip**: **pip install pype32-py3**
+
+The original README follows...
+======
+
 What's pype32? <img src="http://goo.gl/jrf7j8" align="right" height="150" style="max-width: 70px">
 ======
 
 Yet another Python library to read and write [PE/PE+](http://es.wikipedia.org/wiki/Portable_Executable) files.
 
-Installation
+Installation (python2)
 ======
 
 Using **pip**: just type **pip install --pre pype32**
