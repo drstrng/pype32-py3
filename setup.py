@@ -49,13 +49,7 @@ here = os.path.dirname(__file__)
 if not here:
     here = os.path.curdir
 
-# Text describing the module (reStructured text)
-try:
-    readme = os.path.join(here, 'README.md')
-    long_description = open(readme, 'r').read()
-except Exception:
-    warn("README file not found or unreadable!")
-    long_description = """pype32 is python library to read and write PE/PE+ binary files."""
+long_description = """pype32 is python library to read and write PE/PE+ binary files."""
 
 # Get the list of scripts in the "tools" folder
 scripts = glob.glob(os.path.join('tools', '*.py'))
