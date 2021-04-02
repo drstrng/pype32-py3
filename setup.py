@@ -44,28 +44,6 @@ import glob
 if sys.version_info < (3,):
     sys.exit('Sorry, Python 3 is required.  For python2 version see https://github.com/crackinglandia/pype32')
 
-# Distutils hack: in order to be able to build MSI installers with loose
-# version numbers, we subclass StrictVersion to accept loose version numbers
-# and convert them to the strict format. This works because Distutils will
-# happily reinstall a package even if the version number matches exactly the
-# one already installed on the system - so we can simply strip all extraneous
-# characters and beta/postrelease version numbers will be treated just like
-# the base version number.
-if __name__ == '__main__':
-    StrictVersion = version.StrictVersion
-    class NotSoStrictVersion (StrictVersion):
-        def parse (self, vstring):
-            components = []
-            for token in vstring.split('.'):
-                token = token.strip()
-                match = re.search('^[0-9]+', token)
-                if match:
-                    number = token[ match.start() : match.end() ]
-                    components.append(number)
-            vstring = '.'.join(components)
-            return StrictVersion.parse(self, vstring)
-    version.StrictVersion = NotSoStrictVersion
-
 # Get the base directory
 here = os.path.dirname(__file__)
 if not here:
@@ -73,14 +51,14 @@ if not here:
 
 # Text describing the module (reStructured text)
 try:
-    readme = os.path.join(here, 'README')
+    readme = os.path.join(here, 'README.md')
     long_description = open(readme, 'r').read()
 except Exception:
     warn("README file not found or unreadable!")
     long_description = """pype32 is python library to read and write PE/PE+ binary files."""
 
 # Get the list of scripts in the "tools" folder
-scripts = glob.glob(os.path.join(here, 'tools', '*.py'))
+scripts = glob.glob(os.path.join('tools', '*.py'))
 
 # Set the parameters for the setup script
 metadata = {
@@ -92,11 +70,11 @@ metadata = {
 
     # Metadata
     'name'              : 'pype32-py3',
-    'version'           : 'v0.1',
+    'version'           : 'v0.2',
     'description'       : 'Yet another Python library to read and write PE/PE+ files.',
     'long_description'  : long_description,
     'url'               : 'https://github.com/drstrng/pype32-py3',
-    'download_url'      : 'https://github.com/drstrng/pype32-py3/archive/v0.1.tar.gz',
+    'download_url'      : 'https://github.com/drstrng/pype32-py3/archive/v0.2.tar.gz',
     'keywords'          : ['pecoff', 'x86', 'x64', '.net', 'parser'],
     }
 

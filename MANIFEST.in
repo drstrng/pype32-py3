@@ -1,5 +1,5 @@
-include README
 include MANIFEST.in
+include README.md
 include THANKS
 include setup.py
 include tools/*.py
