@@ -64,7 +64,7 @@ metadata = {
 
     # Metadata
     'name'              : 'pype32-py3',
-    'version'           : 'v0.2',
+    'version'           : 'v0.3',
     'description'       : 'Yet another Python library to read and write PE/PE+ files.',
     'long_description'  : long_description,
     'url'               : 'https://github.com/drstrng/pype32-py3',
