@@ -1086,6 +1086,16 @@ class NetMetaDataHeader(baseclasses.BaseStructClass):
         nmh.reserved.value = readDataInstance.readDword()
         nmh.versionLength.value = readDataInstance.readDword()
         nmh.versionString.value = readDataInstance.readAlignedString()
+
+        # 6dcdadc9fe4ee05124655f55f8e5662d has extra null bytes beyond 4-byte alignment
+        # So, readAlignedString may not have advanced the cursor in the stream enough
+        if (
+            readDataInstance.tell() < (16 + nmh.versionLength.value)
+            and nmh.versionLength.value < 64
+        ):
+            # Advance the cursor up to an arbitrary maximum of 64 + 16
+            readDataInstance.setOffset(16 + nmh.versionLength.value)
+                      
         nmh.flags.value = readDataInstance.readWord()
         nmh.numberOfStreams.value = readDataInstance.readWord()
         return nmh
