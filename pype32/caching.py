@@ -27,6 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+import bisect
 
 caches = {}
 
@@ -35,11 +36,31 @@ class Cache(object):
     def __init__(self, name):
         self.name = name
         self.cache = {}
+        self.sorted_keys = []
 
     def get(self, key):
-        return self.cache.get(key)
+        result = self.cache.get(key)
+        if result is None and len(self.sorted_keys) > 1:
+            # .net may point strings inside other strings, but
+            # the cache only uses the start of strings so check
+            # if this key can be part of another str/bytes value
+            idx = bisect.bisect_left(self.sorted_keys, key)
+            if idx > 0:
+                cache_key = self.sorted_keys[idx - 1]
+                offset = key - cache_key
+                if offset > 0:
+                    result = self.cache.get(cache_key)
+                    if result is not None and len(result) > offset:
+                        result = result[offset:]
+                        self.put(key, result)
+        return result
 
     def put(self, key, value):
+        if key not in self.cache and (
+            isinstance(value, str) or isinstance(value, bytes)
+        ):
+            # For strs/bytes keep a sorted list of keys (usually their offsets in .net heaps)
+            bisect.insort(self.sorted_keys, key)
         self.cache.update({ key: value })
 
 def getCache(name):
